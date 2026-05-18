@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>证明你不是机器人</title>
+    <link rel="icon" type="image/png" href="https://s41.ax1x.com/2026/05/17/pex9GCQ.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #ffffff;
+            margin: 0;
+            padding: 0;
+            -webkit-touch-callout: none;
+        }
+
+        /* 电脑端浮窗 */
+        @media (min-width: 769px) {
+            body {
+                background: #f1f5f9;
+            }
+            .floating-modal {
+                max-width: 360px;
+                width: 90%;
+                background: #ffffff;
+                border-radius: 20px;
+                box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.08);
+                margin: 0 auto;
+                overflow: hidden;
+                padding: 0;
+                position: relative;
+            }
+            .modal-content {
+                padding: 28px 20px 28px 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .container {
+                width: 100%;
+            }
+            h2 {
+                margin-top: 0;
+                font-size: 1.5rem;
+            }
+            .verify-section {
+                margin-bottom: 0;
+            }
+            /* 电脑版成功浮层改为浮窗内嵌 */
+            .fullscreen-success {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: #ffffff;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                visibility: hidden;
+                opacity: 0;
+                transition: visibility 0s, opacity 0.3s ease;
+                user-select: none;
+                border-radius: 20px;
+            }
+        }
+
+        /* 手机版全屏成功页保持不变 */
+        @media (max-width: 768px) {
+            .floating-modal {
+                width: 100%;
+                background: transparent;
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0;
+            }
+            .modal-content {
+                padding: 20px 16px;
+                width: 100%;
+            }
+            .container {
+                width: 100%;
+            }
+            .fullscreen-success {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: #ffffff;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                visibility: hidden;
+                opacity: 0;
+                transition: visibility 0s, opacity 0.3s ease;
+                user-select: none;
+            }
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        img {
+            display: block;
+            margin: 0 auto;
+            pointer-events: auto;
+            -webkit-user-drag: none;
+            user-drag: none;
+            -webkit-user-select: none;
+            user-select: none;
+            margin-bottom: 20px;
+            max-width: 100%;
+            height: auto;
+        }
+
+        h5 {
+            font-weight: normal;
+            margin-bottom: 32px;
+            color: #6b6b6b;
+        }
+
+        .buttons-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .accessibility-btn {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            background-color: #6b6b6b;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+            overflow: visible;
+        }
+
+        .accessibility-btn.lighten {
+            background-color: #c0c0c0;
+        }
+
+        .accessibility-btn img {
+            width: 28px;
+            height: 28px;
+            display: block;
+            margin: 0;
+            object-fit: contain;
+        }
+
+        /* 聊天框放在按钮上面（上方） */
+        .static-chat-tooltip {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 100%;
+            margin-bottom: 12px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 1.5px solid #d1d5db;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            white-space: nowrap;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            pointer-events: none;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        /* 三角形在下方 */
+        .static-chat-tooltip::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #d1d5db transparent transparent transparent;
+        }
+
+        .static-chat-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #ffffff transparent transparent transparent;
+            margin-top: -1px;
+        }
+
+        /* 隐藏状态 */
+        .static-chat-tooltip.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* hover时的tooltip隐藏，避免重叠 */
+        .accessibility-btn .tooltip-dialog {
+            position: absolute;
+            left: 100%;
+            right: auto;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 12px;
+            background-color: #ffffff;
+            color: #000000;
+            border: 1.5px solid #d1d5db;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            white-space: nowrap;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            opacity: 0;
+            visibility: hidden;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+
+        .accessibility-btn .tooltip-dialog::after {
+            display: none;
+        }
+
+        .accessibility-btn:hover .tooltip-dialog {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .verify-section {
+            margin-top: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 220px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .long-press-btn {
+            position: relative;
+            width: 100%;
+            height: 44px;
+            border-radius: 100px;
+            background-color: white;
+            border: 2px solid #2b6ef0;
+            cursor: pointer;
+            overflow: hidden;
+            margin: 0;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            user-select: none;
+        }
+
+        .fill-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background-color: #2b6ef0;
+            border-radius: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .btn-text {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2b6ef0;
+            background: transparent;
+            user-select: none;
+        }
+
+        .retry-message {
+            margin-top: 6px;
+            font-size: 0.83rem;
+            font-weight: normal;
+            color: #e53e3e;
+            text-align: left;
+            width: 100%;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-family: inherit;
+            user-select: none;
+        }
+
+        .retry-message.show {
+            opacity: 1;
+        }
+
+        .fullscreen-success.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .success-circle {
+            width: 120px;
+            height: 120px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .success-circle svg {
+            width: 70px;
+            height: 70px;
+            stroke: #ffffff;
+            stroke-width: 5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .success-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #000000;
+            user-select: none;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            animation: blink 1.2s infinite ease-in-out;
+        }
+
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.2; transform: scale(0.8);}
+            50% { opacity: 1; transform: scale(1.2);}
+        }
+    </style>
+    <script>
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+        document.addEventListener('copy', function(e) { e.preventDefault(); return false; });
+        document.addEventListener('cut', function(e) { e.preventDefault(); return false; });
+        document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
+        window.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+    </script>
+</head>
+<body>
+    <div class="floating-modal" id="floatingModal">
+        <div class="modal-content">
+            <div class="container">
+                <h2>证明你不是机器人</h2>
+                <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
+                <h5>长按该按钮</h5>
+
+                <div class="buttons-row">
+                    <div class="accessibility-btn" id="accessBtn">
+                        <img src="https://s41.ax1x.com/2026/05/17/pevReZ8.png" alt="accessibility" draggable="false">
+                        <!-- 静态聊天框放在按钮上方，带向下的三角形 -->
+                        <div class="static-chat-tooltip" id="staticChatTooltip">可访问性挑战</div>
+                        <div class="tooltip-dialog" id="tooltipDialog">可访问性挑战</div>
+                    </div>
+
+                    <div class="verify-section" style="width: 220px; margin:0;">
+                        <div class="long-press-btn" id="pressBtn">
+                            <div class="fill-progress" id="fillProgress"></div>
+                            <div class="btn-text" id="btnText">
+                                <span id="textSpan">按住</span>
+                            </div>
+                        </div>
+                        <div id="retryMsg" class="retry-message">请再试一次</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="fullscreenSuccess" class="fullscreen-success">
+            <div class="success-circle">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L9 17L4 12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="success-text">已通过</div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const pressBtn = document.getElementById('pressBtn');
+            const fillProgress = document.getElementById('fillProgress');
+            const btnTextDiv = document.getElementById('btnText');
+            const textSpan = document.getElementById('textSpan');
+            const retryMsgDiv = document.getElementById('retryMsg');
+            const fullscreenDiv = document.getElementById('fullscreenSuccess');
+            const accessBtn = document.getElementById('accessBtn');
+            const tooltipDialog = document.getElementById('tooltipDialog');
+            const staticChatTooltip = document.getElementById('staticChatTooltip');
+
+            let stepInterval = null;
+            let isPressing = false;
+            let hasMoved = false;
+            let startX = 0, startY = 0;
+            let startTimestamp = 0;
+            let currentFillPercent = 0;
+            const REQUIRED_DURATION = 5000;
+
+            let awaitingSecondPress = false;
+            let autoPressHasMoved = false;
+            let autoPressStartX = 0, autoPressStartY = 0;
+
+            // 隐藏顶部聊天框
+            function hideStaticTooltip() {
+                if (staticChatTooltip) {
+                    staticChatTooltip.classList.add('hide');
+                }
+            }
+
+            function lightenAccessBtn() {
+                accessBtn.classList.add('lighten');
+            }
+
+            function resetAccessBtnColor() {
+                accessBtn.classList.remove('lighten');
+            }
+
+            function continueWithSecondPress() {
+                awaitingSecondPress = false;
+                if (autoPressHasMoved) {
+                    successWithAnimation();
+                } else {
+                    failWithAnimation();
+                }
+            }
+
+            function waitForSecondPress() {
+                if (stepInterval) clearInterval(stepInterval);
+                stepInterval = null;
+                isPressing = false;
+                textSpan.innerHTML = '再次按下';
+                textSpan.style.transform = '';
+                textSpan.style.display = '';
+                btnTextDiv.style.color = 'white';
+                fillProgress.style.width = '100%';
+                awaitingSecondPress = true;
+                const handler = function(e) {
+                    e.preventDefault();
+                    if (awaitingSecondPress) {
+                        pressBtn.removeEventListener('click', handler);
+                        continueWithSecondPress();
+                    }
+                };
+                pressBtn.addEventListener('click', handler);
+                window.secondPressHandler = handler;
+            }
+
+            function startAutoPress() {
+                if (fullscreenDiv.classList.contains('show')) return;
+                // 隐藏聊天框
+                hideStaticTooltip();
+                if (isPressing) {
+                    resetPressState(true, false);
+                }
+                if (window.flipTimer) clearTimeout(window.flipTimer);
+                if (window.loadingTimer) clearTimeout(window.loadingTimer);
+                if (window.secondPressHandler) {
+                    pressBtn.removeEventListener('click', window.secondPressHandler);
+                }
+                resetPressState(true, false);
+                awaitingSecondPress = false;
+                
+                let autoStartX, autoStartY;
+                const rect = pressBtn.getBoundingClientRect();
+                autoStartX = rect.left + rect.width / 2;
+                autoStartY = rect.top + rect.height / 2;
+                
+                if (window.lastMouseX !== undefined && window.lastMouseY !== undefined) {
+                    autoStartX = window.lastMouseX;
+                    autoStartY = window.lastMouseY;
+                }
+                
+                isPressing = true;
+                hasMoved = false;
+                autoPressHasMoved = false;
+                startX = autoStartX;
+                startY = autoStartY;
+                autoPressStartX = autoStartX;
+                autoPressStartY = autoStartY;
+                startTimestamp = Date.now();
+                
+                textSpan.innerHTML = '请稍候';
+                textSpan.style.fontSize = '';
+                textSpan.style.transform = '';
+                textSpan.style.display = '';
+                const oldLoader = textSpan.querySelector('.loading-dots');
+                if (oldLoader) oldLoader.remove();
+                btnTextDiv.style.color = '#2b6ef0';
+                pressBtn.style.backgroundColor = 'white';
+                pressBtn.style.border = '2px solid #2b6ef0';
+                
+                startFillAnimationAuto();
+                
+                window.addEventListener('mousemove', autoMoveHandler);
+                window.addEventListener('mouseup', autoCancelHandler);
+            }
+            
+            function autoMoveHandler(e) {
+                if (!isPressing) return;
+                if (Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3) {
+                    if (!hasMoved) {
+                        hasMoved = true;
+                        autoPressHasMoved = true;
+                    }
+                }
+                window.lastMouseX = e.clientX;
+                window.lastMouseY = e.clientY;
+            }
+            
+            function autoCancelHandler(e) {}
+            
+            function stopAutoDetection() {
+                window.removeEventListener('mousemove', autoMoveHandler);
+                window.removeEventListener('mouseup', autoCancelHandler);
+            }
+            
+            function startFillAnimationAuto() {
+                if (stepInterval) clearInterval(stepInterval);
+                currentFillPercent = 0;
+                fillProgress.style.width = '0%';
+                startTimestamp = Date.now();
+                stepInterval = setInterval(() => {
+                    if (!isPressing) return;
+                    const elapsed = Date.now() - startTimestamp;
+                    let percent = (elapsed / REQUIRED_DURATION) * 100;
+                    if (percent >= 100) {
+                        percent = 100;
+                        fillProgress.style.width = '100%';
+                        btnTextDiv.style.color = 'white';
+                        if (stepInterval) clearInterval(stepInterval);
+                        stepInterval = null;
+                        if (isPressing) {
+                            isPressing = false;
+                            stopAutoDetection();
+                            waitForSecondPress();
+                        }
+                        return;
+                    }
+                    currentFillPercent = percent;
+                    fillProgress.style.width = percent + '%';
+                    const ratio = Math.min(1, percent / 100);
+                    const r = 43 + (255 - 43) * ratio;
+                    const g = 110 + (255 - 110) * ratio;
+                    const b = 240 + (255 - 240) * ratio;
+                    btnTextDiv.style.color = `rgb(${r}, ${g}, ${b})`;
+                }, 30);
+            }
+            
+            window.addEventListener('mousemove', function(e) {
+                window.lastMouseX = e.clientX;
+                window.lastMouseY = e.clientY;
+            });
+            window.lastMouseX = window.innerWidth / 2;
+            window.lastMouseY = window.innerHeight / 2;
+
+            function startAnimationAndThen(isSuccess) {
+                textSpan.style.transition = 'transform 0.25s ease';
+                textSpan.style.display = 'inline-flex';
+                textSpan.style.alignItems = 'center';
+                textSpan.style.justifyContent = 'center';
+                textSpan.style.transform = 'rotateX(90deg)';
+                
+                setTimeout(() => {
+                    textSpan.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto;"><path d="M20 6L9 17L4 12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+                    textSpan.style.transform = 'rotateX(0deg)';
+                    textSpan.style.fontSize = 'inherit';
+                    
+                    window.flipTimer = setTimeout(() => {
+                        textSpan.style.transform = 'rotateX(90deg)';
+                        setTimeout(() => {
+                            textSpan.innerHTML = '';
+                            const loaderDiv = document.createElement('div');
+                            loaderDiv.className = 'loading-dots';
+                            loaderDiv.innerHTML = '<span></span><span></span><span></span>';
+                            textSpan.appendChild(loaderDiv);
+                            textSpan.style.transform = 'rotateX(0deg)';
+                            textSpan.style.display = 'flex';
+                            textSpan.style.alignItems = 'center';
+                            textSpan.style.justifyContent = 'center';
+                            
+                            window.loadingTimer = setTimeout(() => {
+                                if (isSuccess) {
+                                    fullscreenDiv.classList.add('show');
+                                    resetPressState(true, false);
+                                } else {
+                                    resetPressState(true, true);
+                                    retryMsgDiv.classList.add('show');
+                                }
+                                resetAccessBtnColor();
+                            }, 3000);
+                        }, 200);
+                    }, 800);
+                }, 200);
+            }
+
+            function resetPressState(resetFill = true, keepRetryMessage = false) {
+                if (stepInterval) {
+                    clearInterval(stepInterval);
+                    stepInterval = null;
+                }
+                isPressing = false;
+                hasMoved = false;
+                awaitingSecondPress = false;
+                if (window.secondPressHandler) {
+                    pressBtn.removeEventListener('click', window.secondPressHandler);
+                    window.secondPressHandler = null;
+                }
+                if (resetFill) {
+                    currentFillPercent = 0;
+                    fillProgress.style.width = '0%';
+                    btnTextDiv.style.color = '#2b6ef0';
+                    textSpan.innerHTML = '按住';
+                    textSpan.style.transform = '';
+                    textSpan.style.fontSize = '';
+                    textSpan.style.display = '';
+                    const loader = textSpan.querySelector('.loading-dots');
+                    if (loader) loader.remove();
+                    pressBtn.style.backgroundColor = 'white';
+                    pressBtn.style.border = '2px solid #2b6ef0';
+                }
+                if (!keepRetryMessage) {
+                    retryMsgDiv.classList.remove('show');
+                }
+                if (window.flipTimer) clearTimeout(window.flipTimer);
+                if (window.loadingTimer) clearTimeout(window.loadingTimer);
+                if (window.whitenTimer) clearTimeout(window.whitenTimer);
+                if (window.retrySequenceTimer) clearTimeout(window.retrySequenceTimer);
+                stopAutoDetection();
+            }
+
+            function failWithAnimation() {
+                if (stepInterval) clearInterval(stepInterval);
+                isPressing = false;
+                startAnimationAndThen(false);
+            }
+
+            function successWithAnimation() {
+                if (stepInterval) clearInterval(stepInterval);
+                isPressing = false;
+                startAnimationAndThen(true);
+            }
+
+            function onLongPressComplete() {
+                fillProgress.style.width = '100%';
+                btnTextDiv.style.color = 'white';
+                if (stepInterval) clearInterval(stepInterval);
+                if (hasMoved) {
+                    successWithAnimation();
+                } else {
+                    failWithAnimation();
+                }
+            }
+
+            function startFillAnimation() {
+                if (stepInterval) clearInterval(stepInterval);
+                currentFillPercent = 0;
+                fillProgress.style.width = '0%';
+                startTimestamp = Date.now();
+                stepInterval = setInterval(() => {
+                    if (!isPressing) return;
+                    const elapsed = Date.now() - startTimestamp;
+                    let percent = (elapsed / REQUIRED_DURATION) * 100;
+                    if (percent >= 100) {
+                        percent = 100;
+                        fillProgress.style.width = '100%';
+                        btnTextDiv.style.color = 'white';
+                        if (stepInterval) clearInterval(stepInterval);
+                        stepInterval = null;
+                        if (isPressing) {
+                            isPressing = false;
+                            onLongPressComplete();
+                        }
+                        return;
+                    }
+                    currentFillPercent = percent;
+                    fillProgress.style.width = percent + '%';
+                    const ratio = Math.min(1, percent / 100);
+                    const r = 43 + (255 - 43) * ratio;
+                    const g = 110 + (255 - 110) * ratio;
+                    const b = 240 + (255 - 240) * ratio;
+                    btnTextDiv.style.color = `rgb(${r}, ${g}, ${b})`;
+                }, 30);
+            }
+
+            function onPointerDown(e) {
+                e.preventDefault();
+                if (fullscreenDiv.classList.contains('show')) return;
+                // 隐藏聊天框
+                hideStaticTooltip();
+                if (window.flipTimer) clearTimeout(window.flipTimer);
+                if (window.loadingTimer) clearTimeout(window.loadingTimer);
+                if (awaitingSecondPress) {
+                    return;
+                }
+                resetPressState(true, false);
+                isPressing = true;
+                hasMoved = false;
+                const point = e.touches ? e.touches[0] : e;
+                startX = point.clientX;
+                startY = point.clientY;
+                textSpan.innerHTML = '请稍候';
+                textSpan.style.fontSize = '';
+                textSpan.style.transform = '';
+                textSpan.style.display = '';
+                const oldLoader = textSpan.querySelector('.loading-dots');
+                if (oldLoader) oldLoader.remove();
+                btnTextDiv.style.color = '#2b6ef0';
+                pressBtn.style.backgroundColor = 'white';
+                pressBtn.style.border = '2px solid #2b6ef0';
+                startFillAnimation();
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+                window.addEventListener('touchcancel', onPointerUp);
+            }
+
+            function onPointerMove(e) {
+                if (!isPressing) return;
+                const point = e.touches ? e.touches[0] : e;
+                if (Math.abs(point.clientX - startX) > 3 || Math.abs(point.clientY - startY) > 3) {
+                    if (!hasMoved) hasMoved = true;
+                }
+            }
+
+            function onPointerUp(e) {
+                if (!isPressing) {
+                    cleanupEvents();
+                    return;
+                }
+                if (currentFillPercent < 99) {
+                    isPressing = false;
+                    if (stepInterval) clearInterval(stepInterval);
+                    resetPressState(true);
+                    retryMsgDiv.classList.add('show');
+                } else {
+                    isPressing = false;
+                }
+                cleanupEvents();
+            }
+
+            function cleanupEvents() {
+                window.removeEventListener('pointermove', onPointerMove);
+                window.removeEventListener('pointerup', onPointerUp);
+                window.removeEventListener('touchcancel', onPointerUp);
+            }
+
+            accessBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                lightenAccessBtn();
+                startAutoPress();
+            });
+            
+            pressBtn.addEventListener('pointerdown', (e) => {
+                onPointerDown(e);
+            });
+            pressBtn.addEventListener('dragstart', (e) => e.preventDefault());
+        })();
+    </script>
+</body>
+</html>
