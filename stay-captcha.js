@@ -50,12 +50,13 @@
         .stay-captcha {
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             -webkit-touch-callout: none;
-            display: inline-block;
+            display: block;
+            width: 100%;
         }
 
-        /* ===== 顶部条形（跟随容器，去掉fixed） ===== */
+        /* ===== 顶部条形 ===== */
         .stay-captcha .top-bar {
-            width: 90vw;
+            width: 90%;
             max-width: 360px;
             height: 92px;
             background: #ffffff;
@@ -69,6 +70,7 @@
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            margin: 0 auto;
         }
         .stay-captcha .top-bar.show {
             opacity: 1;
@@ -168,7 +170,7 @@
             user-drag: none;
         }
 
-        /* ===== 弹窗（保持fixed居中） ===== */
+        /* ===== 弹窗 ===== */
         .stay-captcha .floating-modal {
             max-width: 360px;
             width: 90%;
