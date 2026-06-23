@@ -50,16 +50,15 @@
         .stay-captcha {
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             -webkit-touch-callout: none;
-            display: contents;
+            display: block;
+            position: relative;
+            width: 100%;
         }
 
         /* ===== 顶部条形 ===== */
         .stay-captcha .top-bar {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
+            position: relative;
+            width: 100%;
             max-width: 360px;
             height: 92px;
             background: #ffffff;
@@ -74,6 +73,7 @@
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            margin: 0 auto;
         }
         .stay-captcha .top-bar.show {
             opacity: 1;
