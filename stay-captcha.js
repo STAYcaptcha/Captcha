@@ -6,7 +6,6 @@
         container: null,
         onSuccess: null,
         onFail: null,
-        theme: '#2b6ef0',
         duration: 5000,
         language: 'zh-CN'
     };
@@ -37,9 +36,9 @@
         }
     };
 
-    // ============ 样式（完全还原原始设计） ============
+    // ============ CSS（直接从您的HTML复制） ============
     const STYLES = `
-        /* 重置 + 基础样式 - 仅作用于容器内部 */
+        /* ===== 重置 + 基础样式 ===== */
         .stay-captcha,
         .stay-captcha * {
             margin: 0;
@@ -56,11 +55,10 @@
         .stay-captcha {
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             -webkit-touch-callout: none;
-            /* 容器本身不设宽高，由内部元素撑开 */
         }
 
-        /* ===== 全屏背景容器 ===== */
-        .stay-captcha .captcha-wrapper {
+        /* ===== body 背景 ===== */
+        .stay-captcha .captcha-body {
             position: fixed;
             top: 0;
             left: 0;
@@ -71,18 +69,14 @@
             justify-content: center;
             align-items: center;
             z-index: 99999;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .stay-captcha .captcha-wrapper.show {
-            opacity: 1;
-            visibility: visible;
         }
 
         /* ===== 顶部条形 ===== */
         .stay-captcha .top-bar {
-            position: relative;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 90%;
             max-width: 360px;
             height: 92px;
@@ -93,7 +87,15 @@
             align-items: center;
             padding: 0 24px;
             gap: 16px;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+        .stay-captcha .top-bar.show {
+            opacity: 1;
+            visibility: visible;
         }
 
         .stay-captcha .custom-checkbox {
@@ -205,7 +207,7 @@
             transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), max-width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), height 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.3s ease, visibility 0.3s ease;
             opacity: 0;
             visibility: hidden;
-            z-index: 100000;
+            z-index: 10000;
         }
         .stay-captcha .floating-modal.ready {
             opacity: 1;
@@ -305,6 +307,7 @@
             white-space: nowrap;
             z-index: 20;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             pointer-events: none;
             opacity: 0;
             visibility: hidden;
@@ -357,6 +360,7 @@
             transition: opacity 0.2s ease;
             opacity: 0;
             visibility: hidden;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         }
         .stay-captcha .accessibility-btn:hover .tooltip-dialog {
             opacity: 1;
@@ -518,6 +522,13 @@
             visibility: hidden;
         }
 
+        .stay-captcha .preload-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
         .stay-captcha .preload-dots {
             display: flex;
             gap: 10px;
@@ -542,6 +553,19 @@
         .stay-captcha .main-content-wrapper.visible {
             opacity: 1;
             visibility: visible;
+        }
+
+        .stay-captcha .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            display: none;
+        }
+        .stay-captcha .modal-overlay.show {
+            display: block;
         }
     `;
 
@@ -571,10 +595,11 @@
             this.autoPressStartY = 0;
 
             this.rootEl = null;
-            this.wrapper = null;
+            this.bodyEl = null;
             this.topBar = null;
             this.mainCheckbox = null;
             this.barText = null;
+            this.modalOverlay = null;
             this.floatingModal = null;
             this.preloadWrapper = null;
             this.mainContentWrapper = null;
@@ -590,8 +615,6 @@
             this._injectStyles();
             this._render();
             this._bindEvents();
-
-            // 默认显示
             this._showTopBar();
         }
 
@@ -604,7 +627,7 @@
             document.head.appendChild(styleEl);
         }
 
-        // ===== 渲染HTML（完全还原原始设计） =====
+        // ===== 渲染HTML（完全复制原始结构） =====
         _render() {
             const container = document.querySelector(this.config.container);
             if (!container) {
@@ -612,7 +635,6 @@
                 return;
             }
 
-            // 清空容器
             container.innerHTML = '';
 
             const root = document.createElement('div');
@@ -621,11 +643,11 @@
             container.appendChild(root);
             this.rootEl = root;
 
-            // 获取所有元素引用
-            this.wrapper = root.querySelector('.captcha-wrapper');
+            this.bodyEl = root.querySelector('.captcha-body');
             this.topBar = root.querySelector('.top-bar');
             this.mainCheckbox = root.querySelector('.custom-checkbox');
             this.barText = root.querySelector('.bar-text');
+            this.modalOverlay = root.querySelector('.modal-overlay');
             this.floatingModal = root.querySelector('.floating-modal');
             this.preloadWrapper = root.querySelector('.preload-wrapper');
             this.mainContentWrapper = root.querySelector('.main-content-wrapper');
@@ -638,13 +660,12 @@
             this.accessBtn = root.querySelector('.accessibility-btn');
             this.staticChatTooltip = root.querySelector('.static-chat-tooltip');
 
-            // 设置语言
             this._applyLanguage();
         }
 
         _getTemplate() {
             return `
-                <div class="captcha-wrapper">
+                <div class="captcha-body">
                     <div class="top-bar">
                         <div class="custom-checkbox">
                             <svg class="check-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -657,6 +678,8 @@
                             <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
                         </div>
                     </div>
+
+                    <div class="modal-overlay"></div>
 
                     <div class="floating-modal closed">
                         <div class="preload-wrapper">
@@ -718,21 +741,13 @@
 
         // ===== 显示顶部条 =====
         _showTopBar() {
-            if (this.wrapper) {
-                this.wrapper.classList.add('show');
-            }
-        }
-
-        // ===== 隐藏顶部条 =====
-        _hideTopBar() {
-            if (this.wrapper) {
-                this.wrapper.classList.remove('show');
+            if (this.topBar) {
+                this.topBar.classList.add('show');
             }
         }
 
         // ===== 绑定事件 =====
         _bindEvents() {
-            // 复选框点击
             this.mainCheckbox.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (this.isVerified) return;
@@ -749,7 +764,12 @@
                 }, 2000);
             });
 
-            // 辅助按钮
+            this.modalOverlay.addEventListener('click', (e) => {
+                if (e.target === this.modalOverlay) {
+                    this._closeModal();
+                }
+            });
+
             this.accessBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (this.isVerified) return;
@@ -757,13 +777,11 @@
                 this._startAutoPress();
             });
 
-            // 长按按钮
             this.pressBtn.addEventListener('pointerdown', (e) => {
                 this._onPointerDown(e);
             });
             this.pressBtn.addEventListener('dragstart', (e) => e.preventDefault());
 
-            // 全局鼠标位置
             window.addEventListener('mousemove', (e) => {
                 window._stayLastMouseX = e.clientX;
                 window._stayLastMouseY = e.clientY;
@@ -778,6 +796,7 @@
             if (this.isModalOpen) return;
 
             this.isModalOpen = true;
+            this.modalOverlay.classList.add('show');
 
             this.floatingModal.classList.remove('closed');
             this.floatingModal.style.opacity = '0';
@@ -830,6 +849,7 @@
         _closeModal() {
             if (!this.isModalOpen) return;
             this.isModalOpen = false;
+            this.modalOverlay.classList.remove('show');
 
             this.floatingModal.classList.remove('ready');
             this.floatingModal.classList.add('closed');
@@ -852,6 +872,7 @@
             this.isVerified = true;
             this.isModalOpen = false;
             this.isInVerification = false;
+            this.modalOverlay.classList.remove('show');
 
             this.floatingModal.classList.remove('ready');
             this.floatingModal.classList.add('closed');
@@ -871,7 +892,6 @@
             this.preloadWrapper.classList.remove('hide');
             this.mainContentWrapper.classList.remove('visible');
 
-            // 调用开发者回调
             if (typeof this.config.onSuccess === 'function') {
                 this.config.onSuccess();
             }
@@ -901,7 +921,7 @@
             }
         }
 
-        // ===== 自动按压（辅助功能） =====
+        // ===== 自动按压 =====
         _startAutoPress() {
             if (this.fullscreenDiv.classList.contains('show')) return;
             this._hideStaticTooltip();
@@ -1033,7 +1053,7 @@
             }
         }
 
-        // ===== 长按完成（手动） =====
+        // ===== 长按完成 =====
         _onLongPressComplete() {
             this.fillProgress.style.width = '100%';
             this.btnTextDiv.style.color = 'white';
@@ -1129,7 +1149,7 @@
             this._stopAutoDetection();
         }
 
-        // ===== 指针事件（手动长按） =====
+        // ===== 指针事件 =====
         _onPointerDown(e) {
             e.preventDefault();
             if (this.fullscreenDiv.classList.contains('show')) return;
@@ -1222,18 +1242,14 @@
             }, 30);
         }
 
-        // ===== 销毁实例 =====
+        // ===== 销毁 =====
         destroy() {
             if (this.rootEl && this.rootEl.parentNode) {
                 this.rootEl.parentNode.removeChild(this.rootEl);
             }
-            // 清理定时器
             this._resetPressState(true, false);
             if (window._stayFlipTimer) clearTimeout(window._stayFlipTimer);
             if (window._stayLoadingTimer) clearTimeout(window._stayLoadingTimer);
-            // 移除全局事件
-            window.removeEventListener('mousemove', this._autoMoveHandler);
-            window.removeEventListener('mouseup', this._autoCancelHandler);
         }
     }
 
@@ -1260,7 +1276,6 @@
         }
     };
 
-    // ============ 暴露全局 ============
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = STAYcaptcha;
     } else {
