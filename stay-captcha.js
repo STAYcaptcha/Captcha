@@ -55,8 +55,8 @@
 
         /* ===== 顶部条形（跟随容器，去掉fixed） ===== */
         .stay-captcha .top-bar {
-            width: 90%;
-            max-width: 420px;
+            width: 90vw;
+            max-width: 360px;
             height: 92px;
             background: #ffffff;
             border-radius: 16px;
