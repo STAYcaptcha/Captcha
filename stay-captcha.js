@@ -53,18 +53,18 @@
             display: inline-block;
         }
 
-        /* ===== 顶部条形 - 跟随容器 ===== */
+        /* ===== 顶部条形（跟随容器，去掉fixed） ===== */
         .stay-captcha .top-bar {
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            gap: 16px;
-            width: 100%;
+            width: 90%;
             max-width: 360px;
             height: 92px;
             background: #ffffff;
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -168,7 +168,7 @@
             user-drag: none;
         }
 
-        /* ===== 弹窗 - 固定居中 ===== */
+        /* ===== 弹窗（保持fixed居中） ===== */
         .stay-captcha .floating-modal {
             max-width: 360px;
             width: 90%;
