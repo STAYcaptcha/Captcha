@@ -1,7 +1,6 @@
 (function(global) {
     'use strict';
 
-    // ============ 默认配置 ============
     const DEFAULTS = {
         container: null,
         onSuccess: null,
@@ -10,7 +9,6 @@
         language: 'zh-CN'
     };
 
-    // ============ 语言包 ============
     const LANG = {
         'zh-CN': {
             title: '证明你不是机器人',
@@ -36,10 +34,7 @@
         }
     };
 
-    // ============ CSS（直接从您的HTML复制） ============
     const STYLES = `
-        /* ===== 重置 + 基础样式 ===== */
-        .stay-captcha,
         .stay-captcha * {
             margin: 0;
             padding: 0;
@@ -55,20 +50,7 @@
         .stay-captcha {
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             -webkit-touch-callout: none;
-        }
-
-        /* ===== body 背景 ===== */
-        .stay-captcha .captcha-body {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #f1f5f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
+            display: contents;
         }
 
         /* ===== 顶部条形 ===== */
@@ -595,7 +577,6 @@
             this.autoPressStartY = 0;
 
             this.rootEl = null;
-            this.bodyEl = null;
             this.topBar = null;
             this.mainCheckbox = null;
             this.barText = null;
@@ -618,7 +599,6 @@
             this._showTopBar();
         }
 
-        // ===== 注入样式 =====
         _injectStyles() {
             if (document.getElementById('stay-captcha-styles')) return;
             const styleEl = document.createElement('style');
@@ -627,23 +607,19 @@
             document.head.appendChild(styleEl);
         }
 
-        // ===== 渲染HTML（完全复制原始结构） =====
         _render() {
             const container = document.querySelector(this.config.container);
             if (!container) {
                 console.error('[STAYcaptcha] 容器未找到: ' + this.config.container);
                 return;
             }
-
             container.innerHTML = '';
-
             const root = document.createElement('div');
             root.className = 'stay-captcha';
             root.innerHTML = this._getTemplate();
             container.appendChild(root);
             this.rootEl = root;
 
-            this.bodyEl = root.querySelector('.captcha-body');
             this.topBar = root.querySelector('.top-bar');
             this.mainCheckbox = root.querySelector('.custom-checkbox');
             this.barText = root.querySelector('.bar-text');
@@ -665,64 +641,62 @@
 
         _getTemplate() {
             return `
-                <div class="captcha-body">
-                    <div class="top-bar">
-                        <div class="custom-checkbox">
-                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M20 6L9 17L4 12" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <div class="spinner"></div>
-                        </div>
-                        <span class="bar-text" data-key="title">证明你不是机器人</span>
-                        <div class="bar-logo">
-                            <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
-                        </div>
+                <div class="top-bar">
+                    <div class="custom-checkbox">
+                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17L4 12" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="spinner"></div>
                     </div>
+                    <span class="bar-text" data-key="title">证明你不是机器人</span>
+                    <div class="bar-logo">
+                        <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
+                    </div>
+                </div>
 
-                    <div class="modal-overlay"></div>
+                <div class="modal-overlay"></div>
 
-                    <div class="floating-modal closed">
-                        <div class="preload-wrapper">
-                            <div class="preload-content">
-                                <div class="preload-dots">
-                                    <span></span><span></span><span></span>
-                                </div>
+                <div class="floating-modal closed">
+                    <div class="preload-wrapper">
+                        <div class="preload-content">
+                            <div class="preload-dots">
+                                <span></span><span></span><span></span>
                             </div>
                         </div>
-                        <div class="main-content-wrapper">
-                            <div class="modal-content">
-                                <div class="container">
-                                    <h2 data-key="title">证明你不是机器人</h2>
-                                    <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
-                                    <h5 data-key="hint">长按该按钮</h5>
+                    </div>
+                    <div class="main-content-wrapper">
+                        <div class="modal-content">
+                            <div class="container">
+                                <h2 data-key="title">证明你不是机器人</h2>
+                                <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
+                                <h5 data-key="hint">长按该按钮</h5>
 
-                                    <div class="buttons-row">
-                                        <div class="accessibility-btn">
-                                            <img src="https://s41.ax1x.com/2026/05/17/pevReZ8.png" alt="accessibility" draggable="false">
-                                            <div class="static-chat-tooltip" data-key="accessibility">可访问性挑战</div>
-                                            <div class="tooltip-dialog" data-key="accessibility">可访问性挑战</div>
-                                        </div>
+                                <div class="buttons-row">
+                                    <div class="accessibility-btn">
+                                        <img src="https://s41.ax1x.com/2026/05/17/pevReZ8.png" alt="accessibility" draggable="false">
+                                        <div class="static-chat-tooltip" data-key="accessibility">可访问性挑战</div>
+                                        <div class="tooltip-dialog" data-key="accessibility">可访问性挑战</div>
+                                    </div>
 
-                                        <div class="verify-section" style="width:220px; margin:0;">
-                                            <div class="long-press-btn">
-                                                <div class="fill-progress"></div>
-                                                <div class="btn-text">
-                                                    <span class="text-span" data-key="press">按住</span>
-                                                </div>
+                                    <div class="verify-section" style="width:220px; margin:0;">
+                                        <div class="long-press-btn">
+                                            <div class="fill-progress"></div>
+                                            <div class="btn-text">
+                                                <span class="text-span" data-key="press">按住</span>
                                             </div>
-                                            <div class="retry-message" data-key="retry">请再试一次</div>
                                         </div>
+                                        <div class="retry-message" data-key="retry">请再试一次</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="fullscreen-success">
-                                <div class="success-circle">
-                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M20 6L9 17L4 12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </div>
-                                <div class="success-text" data-key="success">已通过</div>
+                        </div>
+                        <div class="fullscreen-success">
+                            <div class="success-circle">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20 6L9 17L4 12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
                             </div>
+                            <div class="success-text" data-key="success">已通过</div>
                         </div>
                     </div>
                 </div>
@@ -739,14 +713,12 @@
             });
         }
 
-        // ===== 显示顶部条 =====
         _showTopBar() {
             if (this.topBar) {
                 this.topBar.classList.add('show');
             }
         }
 
-        // ===== 绑定事件 =====
         _bindEvents() {
             this.mainCheckbox.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -790,7 +762,6 @@
             window._stayLastMouseY = window.innerHeight / 2;
         }
 
-        // ===== 打开弹窗 =====
         _openModal() {
             if (this.isVerified) return;
             if (this.isModalOpen) return;
@@ -845,7 +816,6 @@
             }, 2000);
         }
 
-        // ===== 关闭弹窗 =====
         _closeModal() {
             if (!this.isModalOpen) return;
             this.isModalOpen = false;
@@ -867,7 +837,6 @@
             }
         }
 
-        // ===== 验证成功 =====
         _handleVerificationSuccess() {
             this.isVerified = true;
             this.isModalOpen = false;
@@ -897,7 +866,6 @@
             }
         }
 
-        // ===== 验证失败 =====
         _handleVerificationFail() {
             this._resetPressState(true, true);
             this.retryMsgDiv.classList.add('show');
@@ -908,7 +876,6 @@
             }
         }
 
-        // ===== 工具提示 =====
         _showStaticTooltip() {
             if (this.staticChatTooltip) {
                 this.staticChatTooltip.classList.add('show');
@@ -921,7 +888,6 @@
             }
         }
 
-        // ===== 自动按压 =====
         _startAutoPress() {
             if (this.fullscreenDiv.classList.contains('show')) return;
             this._hideStaticTooltip();
@@ -1053,7 +1019,6 @@
             }
         }
 
-        // ===== 长按完成 =====
         _onLongPressComplete() {
             this.fillProgress.style.width = '100%';
             this.btnTextDiv.style.color = 'white';
@@ -1065,7 +1030,6 @@
             }
         }
 
-        // ===== 动画 =====
         _successWithAnimation() {
             if (this.stepInterval) clearInterval(this.stepInterval);
             this.isPressing = false;
@@ -1115,7 +1079,6 @@
             }, 200);
         }
 
-        // ===== 重置状态 =====
         _resetPressState(resetFill = true, keepRetryMessage = false) {
             if (this.stepInterval) {
                 clearInterval(this.stepInterval);
@@ -1149,7 +1112,6 @@
             this._stopAutoDetection();
         }
 
-        // ===== 指针事件 =====
         _onPointerDown(e) {
             e.preventDefault();
             if (this.fullscreenDiv.classList.contains('show')) return;
@@ -1242,7 +1204,6 @@
             }, 30);
         }
 
-        // ===== 销毁 =====
         destroy() {
             if (this.rootEl && this.rootEl.parentNode) {
                 this.rootEl.parentNode.removeChild(this.rootEl);
@@ -1253,7 +1214,6 @@
         }
     }
 
-    // ============ 全局API ============
     const STAYcaptcha = {
         instances: [],
         init: function(config) {
