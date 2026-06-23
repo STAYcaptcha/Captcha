@@ -37,8 +37,10 @@
         }
     };
 
-    // ============ 样式（带作用域前缀） ============
+    // ============ 样式（完全还原原始设计） ============
     const STYLES = `
+        /* 重置 + 基础样式 - 仅作用于容器内部 */
+        .stay-captcha,
         .stay-captcha * {
             margin: 0;
             padding: 0;
@@ -53,34 +55,47 @@
 
         .stay-captcha {
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-            display: inline-block;
-            position: relative;
             -webkit-touch-callout: none;
+            /* 容器本身不设宽高，由内部元素撑开 */
+        }
+
+        /* ===== 全屏背景容器 ===== */
+        .stay-captcha .captcha-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .stay-captcha .captcha-wrapper.show {
+            opacity: 1;
+            visibility: visible;
         }
 
         /* ===== 顶部条形 ===== */
         .stay-captcha .top-bar {
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            gap: 16px;
-            width: 100%;
+            position: relative;
+            width: 90%;
             max-width: 360px;
             height: 92px;
             background: #ffffff;
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.14);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            position: relative;
-        }
-        .stay-captcha .top-bar.show {
-            opacity: 1;
-            visibility: visible;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         }
 
-        /* ===== 复选框 ===== */
         .stay-captcha .custom-checkbox {
             width: 34px;
             height: 34px;
@@ -181,6 +196,7 @@
             background: #ffffff;
             border-radius: 20px;
             box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin: 0 auto;
             overflow: hidden;
             position: fixed;
             top: 50%;
@@ -189,7 +205,7 @@
             transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), max-width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), height 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.3s ease, visibility 0.3s ease;
             opacity: 0;
             visibility: hidden;
-            z-index: 99999;
+            z-index: 100000;
         }
         .stay-captcha .floating-modal.ready {
             opacity: 1;
@@ -527,19 +543,6 @@
             opacity: 1;
             visibility: visible;
         }
-
-        .stay-captcha .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 99998;
-            display: none;
-        }
-        .stay-captcha .modal-overlay.show {
-            display: block;
-        }
     `;
 
     // ============ 主类 ============
@@ -567,12 +570,11 @@
             this.autoPressStartX = 0;
             this.autoPressStartY = 0;
 
-            this.container = null;
             this.rootEl = null;
+            this.wrapper = null;
             this.topBar = null;
             this.mainCheckbox = null;
             this.barText = null;
-            this.modalOverlay = null;
             this.floatingModal = null;
             this.preloadWrapper = null;
             this.mainContentWrapper = null;
@@ -588,6 +590,8 @@
             this._injectStyles();
             this._render();
             this._bindEvents();
+
+            // 默认显示
             this._showTopBar();
         }
 
@@ -600,14 +604,16 @@
             document.head.appendChild(styleEl);
         }
 
-        // ===== 渲染HTML =====
+        // ===== 渲染HTML（完全还原原始设计） =====
         _render() {
             const container = document.querySelector(this.config.container);
             if (!container) {
                 console.error('[STAYcaptcha] 容器未找到: ' + this.config.container);
                 return;
             }
-            this.container = container;
+
+            // 清空容器
+            container.innerHTML = '';
 
             const root = document.createElement('div');
             root.className = 'stay-captcha';
@@ -616,10 +622,10 @@
             this.rootEl = root;
 
             // 获取所有元素引用
+            this.wrapper = root.querySelector('.captcha-wrapper');
             this.topBar = root.querySelector('.top-bar');
             this.mainCheckbox = root.querySelector('.custom-checkbox');
             this.barText = root.querySelector('.bar-text');
-            this.modalOverlay = root.querySelector('.modal-overlay');
             this.floatingModal = root.querySelector('.floating-modal');
             this.preloadWrapper = root.querySelector('.preload-wrapper');
             this.mainContentWrapper = root.querySelector('.main-content-wrapper');
@@ -638,62 +644,62 @@
 
         _getTemplate() {
             return `
-                <div class="top-bar">
-                    <div class="custom-checkbox">
-                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 6L9 17L4 12" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <div class="spinner"></div>
-                    </div>
-                    <span class="bar-text" data-key="title">证明你不是机器人</span>
-                    <div class="bar-logo">
-                        <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
-                    </div>
-                </div>
-
-                <div class="modal-overlay"></div>
-
-                <div class="floating-modal closed">
-                    <div class="preload-wrapper">
-                        <div class="preload-content">
-                            <div class="preload-dots">
-                                <span></span><span></span><span></span>
-                            </div>
+                <div class="captcha-wrapper">
+                    <div class="top-bar">
+                        <div class="custom-checkbox">
+                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div class="spinner"></div>
+                        </div>
+                        <span class="bar-text" data-key="title">证明你不是机器人</span>
+                        <div class="bar-logo">
+                            <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
                         </div>
                     </div>
-                    <div class="main-content-wrapper">
-                        <div class="modal-content">
-                            <div class="container">
-                                <h2 data-key="title">证明你不是机器人</h2>
-                                <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
-                                <h5 data-key="hint">长按该按钮</h5>
 
-                                <div class="buttons-row">
-                                    <div class="accessibility-btn">
-                                        <img src="https://s41.ax1x.com/2026/05/17/pevReZ8.png" alt="accessibility" draggable="false">
-                                        <div class="static-chat-tooltip" data-key="accessibility">可访问性挑战</div>
-                                        <div class="tooltip-dialog" data-key="accessibility">可访问性挑战</div>
-                                    </div>
-
-                                    <div class="verify-section" style="width:220px; margin:0;">
-                                        <div class="long-press-btn">
-                                            <div class="fill-progress"></div>
-                                            <div class="btn-text">
-                                                <span class="text-span" data-key="press">按住</span>
-                                            </div>
-                                        </div>
-                                        <div class="retry-message" data-key="retry">请再试一次</div>
-                                    </div>
+                    <div class="floating-modal closed">
+                        <div class="preload-wrapper">
+                            <div class="preload-content">
+                                <div class="preload-dots">
+                                    <span></span><span></span><span></span>
                                 </div>
                             </div>
                         </div>
-                        <div class="fullscreen-success">
-                            <div class="success-circle">
-                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M20 6L9 17L4 12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
+                        <div class="main-content-wrapper">
+                            <div class="modal-content">
+                                <div class="container">
+                                    <h2 data-key="title">证明你不是机器人</h2>
+                                    <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
+                                    <h5 data-key="hint">长按该按钮</h5>
+
+                                    <div class="buttons-row">
+                                        <div class="accessibility-btn">
+                                            <img src="https://s41.ax1x.com/2026/05/17/pevReZ8.png" alt="accessibility" draggable="false">
+                                            <div class="static-chat-tooltip" data-key="accessibility">可访问性挑战</div>
+                                            <div class="tooltip-dialog" data-key="accessibility">可访问性挑战</div>
+                                        </div>
+
+                                        <div class="verify-section" style="width:220px; margin:0;">
+                                            <div class="long-press-btn">
+                                                <div class="fill-progress"></div>
+                                                <div class="btn-text">
+                                                    <span class="text-span" data-key="press">按住</span>
+                                                </div>
+                                            </div>
+                                            <div class="retry-message" data-key="retry">请再试一次</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="success-text" data-key="success">已通过</div>
+                            <div class="fullscreen-success">
+                                <div class="success-circle">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17L4 12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="success-text" data-key="success">已通过</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -712,8 +718,15 @@
 
         // ===== 显示顶部条 =====
         _showTopBar() {
-            if (this.topBar) {
-                this.topBar.classList.add('show');
+            if (this.wrapper) {
+                this.wrapper.classList.add('show');
+            }
+        }
+
+        // ===== 隐藏顶部条 =====
+        _hideTopBar() {
+            if (this.wrapper) {
+                this.wrapper.classList.remove('show');
             }
         }
 
@@ -734,13 +747,6 @@
                     this.checkboxLoading = false;
                     this._openModal();
                 }, 2000);
-            });
-
-            // 遮罩点击关闭
-            this.modalOverlay.addEventListener('click', (e) => {
-                if (e.target === this.modalOverlay) {
-                    this._closeModal();
-                }
             });
 
             // 辅助按钮
@@ -772,7 +778,6 @@
             if (this.isModalOpen) return;
 
             this.isModalOpen = true;
-            this.modalOverlay.classList.add('show');
 
             this.floatingModal.classList.remove('closed');
             this.floatingModal.style.opacity = '0';
@@ -825,7 +830,6 @@
         _closeModal() {
             if (!this.isModalOpen) return;
             this.isModalOpen = false;
-            this.modalOverlay.classList.remove('show');
 
             this.floatingModal.classList.remove('ready');
             this.floatingModal.classList.add('closed');
@@ -848,7 +852,6 @@
             this.isVerified = true;
             this.isModalOpen = false;
             this.isInVerification = false;
-            this.modalOverlay.classList.remove('show');
 
             this.floatingModal.classList.remove('ready');
             this.floatingModal.classList.add('closed');
@@ -1218,6 +1221,20 @@
                 this.btnTextDiv.style.color = `rgb(${r}, ${g}, ${b})`;
             }, 30);
         }
+
+        // ===== 销毁实例 =====
+        destroy() {
+            if (this.rootEl && this.rootEl.parentNode) {
+                this.rootEl.parentNode.removeChild(this.rootEl);
+            }
+            // 清理定时器
+            this._resetPressState(true, false);
+            if (window._stayFlipTimer) clearTimeout(window._stayFlipTimer);
+            if (window._stayLoadingTimer) clearTimeout(window._stayLoadingTimer);
+            // 移除全局事件
+            window.removeEventListener('mousemove', this._autoMoveHandler);
+            window.removeEventListener('mouseup', this._autoCancelHandler);
+        }
     }
 
     // ============ 全局API ============
@@ -1233,14 +1250,11 @@
             return instance;
         },
         destroy: function(container) {
-            // 简单清理
-            const idx = this.instances.findIndex(inst => inst.container === container);
+            const idx = this.instances.findIndex(inst => {
+                return inst.rootEl && inst.rootEl.parentNode === container;
+            });
             if (idx !== -1) {
-                // 移除DOM
-                const root = this.instances[idx].rootEl;
-                if (root && root.parentNode) {
-                    root.parentNode.removeChild(root);
-                }
+                this.instances[idx].destroy();
                 this.instances.splice(idx, 1);
             }
         }
