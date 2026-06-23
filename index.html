@@ -24,107 +24,181 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #ffffff;
+            background: #f1f5f9;
             margin: 0;
             padding: 0;
             -webkit-touch-callout: none;
         }
 
-        /* 电脑端浮窗 */
-        @media (min-width: 769px) {
-            body {
-                background: #f1f5f9;
-            }
-            .floating-modal {
-                max-width: 360px;
-                width: 90%;
-                background: #ffffff;
-                border-radius: 20px;
-                box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.08);
-                margin: 0 auto;
-                overflow: hidden;
-                padding: 0;
-                position: relative;
-            }
-            .modal-content {
-                padding: 28px 20px 28px 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            }
-            .container {
-                width: 100%;
-            }
-            h2 {
-                margin-top: 0;
-                font-size: 1.5rem;
-            }
-            .verify-section {
-                margin-bottom: 0;
-            }
-            /* 电脑版成功浮层改为浮窗内嵌 */
-            .fullscreen-success {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: #ffffff;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-                visibility: hidden;
+        .top-bar {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 360px;
+            height: 92px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+        .top-bar.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-checkbox {
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            border-radius: 6px;
+            border: 2.5px solid #b0b0b0;
+            background: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .custom-checkbox:hover {
+            border-color: #2b6ef0;
+        }
+        .custom-checkbox.loading {
+            border-color: transparent;
+            background: transparent;
+            cursor: default;
+        }
+        .custom-checkbox.loading .spinner {
+            display: block;
+        }
+        .custom-checkbox.loading .check-icon {
+            display: none;
+        }
+        .custom-checkbox.done {
+            border-color: transparent;
+            background: #ffffff;
+            cursor: default;
+        }
+        .custom-checkbox.done .check-icon {
+            display: block;
+        }
+        .custom-checkbox.done .spinner {
+            display: none;
+        }
+
+        .custom-checkbox .check-icon {
+            display: none;
+            width: 32px;
+            height: 32px;
+            stroke: #22c55e;
+            stroke-width: 4;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            animation: checkFlip 1s ease forwards;
+            transform-origin: center;
+        }
+        @keyframes checkFlip {
+            0% {
+                transform: rotateX(90deg);
                 opacity: 0;
-                transition: visibility 0s, opacity 0.3s ease;
-                user-select: none;
-                border-radius: 20px;
+            }
+            100% {
+                transform: rotateX(0deg);
+                opacity: 1;
             }
         }
 
-        /* 手机版全屏成功页保持不变 */
-        @media (max-width: 768px) {
-            .floating-modal {
-                width: 100%;
-                background: transparent;
-                box-shadow: none;
-                border-radius: 0;
-                padding: 0;
-            }
-            .modal-content {
-                padding: 20px 16px;
-                width: 100%;
-            }
-            .container {
-                width: 100%;
-            }
-            .fullscreen-success {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: #ffffff;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-                visibility: hidden;
-                opacity: 0;
-                transition: visibility 0s, opacity 0.3s ease;
-                user-select: none;
-            }
+        .custom-checkbox .spinner {
+            display: none;
+            width: 26px;
+            height: 26px;
+            border: 3px solid #2b6ef0;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .bar-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1e1e1e;
+            flex: 1;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .bar-logo {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+        }
+        .bar-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+
+        .floating-modal {
+            max-width: 360px;
+            width: 90%;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin: 0 auto;
+            overflow: hidden;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), max-width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), height 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 10000;
+        }
+
+        .floating-modal.ready {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .floating-modal.closed {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .modal-content {
+            padding: 28px 20px 28px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .container {
+            width: 100%;
             text-align: center;
         }
 
         h2 {
             margin-bottom: 20px;
+            font-size: 1.5rem;
         }
 
         img {
@@ -182,7 +256,6 @@
             object-fit: contain;
         }
 
-        /* 聊天框放在按钮上面（上方） */
         .static-chat-tooltip {
             position: absolute;
             left: 50%;
@@ -201,12 +274,11 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             pointer-events: none;
-            opacity: 1;
-            visibility: visible;
+            opacity: 0;
+            visibility: hidden;
             transition: opacity 0.2s ease, visibility 0.2s ease;
         }
 
-        /* 三角形在下方 */
         .static-chat-tooltip::before {
             content: '';
             position: absolute;
@@ -230,13 +302,11 @@
             margin-top: -1px;
         }
 
-        /* 隐藏状态 */
-        .static-chat-tooltip.hide {
-            opacity: 0;
-            visibility: hidden;
+        .static-chat-tooltip.show {
+            opacity: 1;
+            visibility: visible;
         }
 
-        /* hover时的tooltip隐藏，避免重叠 */
         .accessibility-btn .tooltip-dialog {
             position: absolute;
             left: 100%;
@@ -259,10 +329,6 @@
             opacity: 0;
             visibility: hidden;
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-        }
-
-        .accessibility-btn .tooltip-dialog::after {
-            display: none;
         }
 
         .accessibility-btn:hover .tooltip-dialog {
@@ -339,6 +405,25 @@
             opacity: 1;
         }
 
+        .fullscreen-success {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+            user-select: none;
+            border-radius: 20px;
+        }
+
         .fullscreen-success.show {
             visibility: visible;
             opacity: 1;
@@ -395,6 +480,75 @@
             0%, 100% { opacity: 0.2; transform: scale(0.8);}
             50% { opacity: 1; transform: scale(1.2);}
         }
+
+        .preload-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 10;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .preload-wrapper.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .preload-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .preload-dots {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .preload-dots span {
+            width: 12px;
+            height: 12px;
+            background-color: #6b6b6b;
+            border-radius: 50%;
+            animation: blink 1.2s infinite ease-in-out;
+        }
+
+        .preload-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .preload-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        .main-content-wrapper {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease 0.1s, visibility 0.3s ease 0.1s;
+        }
+
+        .main-content-wrapper.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            display: none;
+        }
+        .modal-overlay.show {
+            display: block;
+        }
     </style>
     <script>
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
@@ -405,45 +559,79 @@
     </script>
 </head>
 <body>
+
+    <div class="top-bar" id="topBar">
+        <div class="custom-checkbox" id="mainCheckbox">
+            <svg class="check-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="spinner"></div>
+        </div>
+        <span class="bar-text" id="barText">证明你不是机器人</span>
+        <div class="bar-logo">
+            <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay"></div>
+
     <div class="floating-modal" id="floatingModal">
-        <div class="modal-content">
-            <div class="container">
-                <h2>证明你不是机器人</h2>
-                <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
-                <h5>长按该按钮</h5>
-
-                <div class="buttons-row">
-                    <div class="accessibility-btn" id="accessBtn">
-                        <img src="https://s41.ax1x.com/2026/05/17/pevReZ8.png" alt="accessibility" draggable="false">
-                        <!-- 静态聊天框放在按钮上方，带向下的三角形 -->
-                        <div class="static-chat-tooltip" id="staticChatTooltip">可访问性挑战</div>
-                        <div class="tooltip-dialog" id="tooltipDialog">可访问性挑战</div>
-                    </div>
-
-                    <div class="verify-section" style="width: 220px; margin:0;">
-                        <div class="long-press-btn" id="pressBtn">
-                            <div class="fill-progress" id="fillProgress"></div>
-                            <div class="btn-text" id="btnText">
-                                <span id="textSpan">按住</span>
-                            </div>
-                        </div>
-                        <div id="retryMsg" class="retry-message">请再试一次</div>
-                    </div>
+        <div class="preload-wrapper" id="preloadWrapper">
+            <div class="preload-content">
+                <div class="preload-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
             </div>
         </div>
-        <div id="fullscreenSuccess" class="fullscreen-success">
-            <div class="success-circle">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 6L9 17L4 12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        <div class="main-content-wrapper" id="mainContentWrapper">
+            <div class="modal-content">
+                <div class="container">
+                    <h2>证明你不是机器人</h2>
+                    <img src="https://s41.ax1x.com/2026/05/17/pex9GCQ.png" alt="" draggable="false">
+                    <h5>长按该按钮</h5>
+
+                    <div class="buttons-row">
+                        <div class="accessibility-btn" id="accessBtn">
+                            <img src="https://s41.ax1x.com/2026/05/17/pevReZ8.png" alt="accessibility" draggable="false">
+                            <div class="static-chat-tooltip" id="staticChatTooltip">可访问性挑战</div>
+                            <div class="tooltip-dialog" id="tooltipDialog">可访问性挑战</div>
+                        </div>
+
+                        <div class="verify-section" style="width: 220px; margin:0;">
+                            <div class="long-press-btn" id="pressBtn">
+                                <div class="fill-progress" id="fillProgress"></div>
+                                <div class="btn-text" id="btnText">
+                                    <span id="textSpan">按住</span>
+                                </div>
+                            </div>
+                            <div id="retryMsg" class="retry-message">请再试一次</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="success-text">已通过</div>
+            <div id="fullscreenSuccess" class="fullscreen-success">
+                <div class="success-circle">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6L9 17L4 12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="success-text">已通过</div>
+            </div>
         </div>
     </div>
 
     <script>
         (function(){
+            const topBar = document.getElementById('topBar');
+            const mainCheckbox = document.getElementById('mainCheckbox');
+            const barText = document.getElementById('barText');
+            const modalOverlay = document.getElementById('modalOverlay');
+
+            const floatingModal = document.getElementById('floatingModal');
+            const preloadWrapper = document.getElementById('preloadWrapper');
+            const mainContentWrapper = document.getElementById('mainContentWrapper');
             const pressBtn = document.getElementById('pressBtn');
             const fillProgress = document.getElementById('fillProgress');
             const btnTextDiv = document.getElementById('btnText');
@@ -451,8 +639,12 @@
             const retryMsgDiv = document.getElementById('retryMsg');
             const fullscreenDiv = document.getElementById('fullscreenSuccess');
             const accessBtn = document.getElementById('accessBtn');
-            const tooltipDialog = document.getElementById('tooltipDialog');
             const staticChatTooltip = document.getElementById('staticChatTooltip');
+
+            let isVerified = false;
+            let isModalOpen = false;
+            let checkboxLoading = false;
+            let isInVerification = false;
 
             let stepInterval = null;
             let isPressing = false;
@@ -466,10 +658,141 @@
             let autoPressHasMoved = false;
             let autoPressStartX = 0, autoPressStartY = 0;
 
-            // 隐藏顶部聊天框
+            function showTopBar() {
+                topBar.classList.add('show');
+            }
+
+            mainCheckbox.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (isVerified) return;
+                if (checkboxLoading) return;
+                if (isInVerification) return;
+
+                checkboxLoading = true;
+                isInVerification = true;
+                mainCheckbox.classList.add('loading');
+
+                setTimeout(function() {
+                    checkboxLoading = false;
+                    openModal();
+                }, 2000);
+            });
+
+            function openModal() {
+                if (isVerified) return;
+                if (isModalOpen) return;
+
+                isModalOpen = true;
+                modalOverlay.classList.add('show');
+
+                floatingModal.classList.remove('closed');
+                floatingModal.style.opacity = '0';
+                floatingModal.style.visibility = 'hidden';
+
+                setTimeout(function() {
+                    floatingModal.style.opacity = '1';
+                    floatingModal.style.visibility = 'visible';
+                    floatingModal.classList.add('ready');
+                    triggerModalEntrance();
+                }, 50);
+            }
+
+            function closeModal() {
+                if (!isModalOpen) return;
+                isModalOpen = false;
+                modalOverlay.classList.remove('show');
+
+                floatingModal.classList.remove('ready');
+                floatingModal.classList.add('closed');
+                floatingModal.style.opacity = '0';
+                floatingModal.style.visibility = 'hidden';
+
+                resetPressState(true, false);
+                fullscreenDiv.classList.remove('show');
+                preloadWrapper.classList.remove('hide');
+                mainContentWrapper.classList.remove('visible');
+
+                if (!isVerified) {
+                    mainCheckbox.classList.remove('loading', 'done');
+                    isInVerification = false;
+                }
+            }
+
+            function handleVerificationSuccess() {
+                isVerified = true;
+                isModalOpen = false;
+                isInVerification = false;
+                modalOverlay.classList.remove('show');
+
+                floatingModal.classList.remove('ready');
+                floatingModal.classList.add('closed');
+                floatingModal.style.opacity = '0';
+                floatingModal.style.visibility = 'hidden';
+
+                mainCheckbox.classList.remove('loading');
+                void mainCheckbox.offsetWidth;
+                requestAnimationFrame(function() {
+                    mainCheckbox.classList.add('done');
+                });
+
+                barText.textContent = '已完成人机验证';
+
+                resetPressState(true, false);
+                fullscreenDiv.classList.remove('show');
+                preloadWrapper.classList.remove('hide');
+                mainContentWrapper.classList.remove('visible');
+            }
+
+            function triggerModalEntrance() {
+                const smallHeight = 100;
+                const smallWidth = 160;
+
+                floatingModal.style.transition = 'none';
+                floatingModal.style.width = smallWidth + 'px';
+                floatingModal.style.maxWidth = smallWidth + 'px';
+                floatingModal.style.height = smallHeight + 'px';
+
+                floatingModal.offsetHeight;
+
+                floatingModal.style.transition = 'width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), max-width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), height 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.01s ease, visibility 0.01s ease';
+                floatingModal.style.opacity = '1';
+                floatingModal.style.visibility = 'visible';
+                floatingModal.classList.add('ready');
+
+                setTimeout(function() {
+                    floatingModal.style.width = '';
+                    floatingModal.style.maxWidth = '';
+                    floatingModal.style.width = '90%';
+                    floatingModal.style.maxWidth = '360px';
+
+                    const modalContent = document.querySelector('.modal-content');
+                    const targetHeight = modalContent ? modalContent.offsetHeight + 56 : 420;
+                    floatingModal.style.height = targetHeight + 'px';
+
+                    setTimeout(function() {
+                        preloadWrapper.classList.add('hide');
+                        mainContentWrapper.classList.add('visible');
+                        showStaticTooltip();
+                        floatingModal.style.height = '';
+                    }, 400);
+                }, 2000);
+            }
+
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+
+            function showStaticTooltip() {
+                if (staticChatTooltip) {
+                    staticChatTooltip.classList.add('show');
+                }
+            }
+
             function hideStaticTooltip() {
                 if (staticChatTooltip) {
-                    staticChatTooltip.classList.add('hide');
+                    staticChatTooltip.classList.remove('show');
                 }
             }
 
@@ -513,7 +836,6 @@
 
             function startAutoPress() {
                 if (fullscreenDiv.classList.contains('show')) return;
-                // 隐藏聊天框
                 hideStaticTooltip();
                 if (isPressing) {
                     resetPressState(true, false);
@@ -525,17 +847,17 @@
                 }
                 resetPressState(true, false);
                 awaitingSecondPress = false;
-                
+
                 let autoStartX, autoStartY;
                 const rect = pressBtn.getBoundingClientRect();
                 autoStartX = rect.left + rect.width / 2;
                 autoStartY = rect.top + rect.height / 2;
-                
+
                 if (window.lastMouseX !== undefined && window.lastMouseY !== undefined) {
                     autoStartX = window.lastMouseX;
                     autoStartY = window.lastMouseY;
                 }
-                
+
                 isPressing = true;
                 hasMoved = false;
                 autoPressHasMoved = false;
@@ -544,7 +866,7 @@
                 autoPressStartX = autoStartX;
                 autoPressStartY = autoStartY;
                 startTimestamp = Date.now();
-                
+
                 textSpan.innerHTML = '请稍候';
                 textSpan.style.fontSize = '';
                 textSpan.style.transform = '';
@@ -554,13 +876,13 @@
                 btnTextDiv.style.color = '#2b6ef0';
                 pressBtn.style.backgroundColor = 'white';
                 pressBtn.style.border = '2px solid #2b6ef0';
-                
+
                 startFillAnimationAuto();
-                
+
                 window.addEventListener('mousemove', autoMoveHandler);
                 window.addEventListener('mouseup', autoCancelHandler);
             }
-            
+
             function autoMoveHandler(e) {
                 if (!isPressing) return;
                 if (Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3) {
@@ -572,14 +894,14 @@
                 window.lastMouseX = e.clientX;
                 window.lastMouseY = e.clientY;
             }
-            
+
             function autoCancelHandler(e) {}
-            
+
             function stopAutoDetection() {
                 window.removeEventListener('mousemove', autoMoveHandler);
                 window.removeEventListener('mouseup', autoCancelHandler);
             }
-            
+
             function startFillAnimationAuto() {
                 if (stepInterval) clearInterval(stepInterval);
                 currentFillPercent = 0;
@@ -611,7 +933,7 @@
                     btnTextDiv.style.color = `rgb(${r}, ${g}, ${b})`;
                 }, 30);
             }
-            
+
             window.addEventListener('mousemove', function(e) {
                 window.lastMouseX = e.clientX;
                 window.lastMouseY = e.clientY;
@@ -625,12 +947,12 @@
                 textSpan.style.alignItems = 'center';
                 textSpan.style.justifyContent = 'center';
                 textSpan.style.transform = 'rotateX(90deg)';
-                
+
                 setTimeout(() => {
                     textSpan.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto;"><path d="M20 6L9 17L4 12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
                     textSpan.style.transform = 'rotateX(0deg)';
                     textSpan.style.fontSize = 'inherit';
-                    
+
                     window.flipTimer = setTimeout(() => {
                         textSpan.style.transform = 'rotateX(90deg)';
                         setTimeout(() => {
@@ -643,16 +965,15 @@
                             textSpan.style.display = 'flex';
                             textSpan.style.alignItems = 'center';
                             textSpan.style.justifyContent = 'center';
-                            
+
                             window.loadingTimer = setTimeout(() => {
                                 if (isSuccess) {
-                                    fullscreenDiv.classList.add('show');
-                                    resetPressState(true, false);
+                                    handleVerificationSuccess();
                                 } else {
                                     resetPressState(true, true);
                                     retryMsgDiv.classList.add('show');
+                                    resetAccessBtnColor();
                                 }
-                                resetAccessBtnColor();
                             }, 3000);
                         }, 200);
                     }, 800);
@@ -751,7 +1072,7 @@
             function onPointerDown(e) {
                 e.preventDefault();
                 if (fullscreenDiv.classList.contains('show')) return;
-                // 隐藏聊天框
+                if (isVerified) return;
                 hideStaticTooltip();
                 if (window.flipTimer) clearTimeout(window.flipTimer);
                 if (window.loadingTimer) clearTimeout(window.loadingTimer);
@@ -811,14 +1132,22 @@
 
             accessBtn.addEventListener('click', (e) => {
                 e.preventDefault();
+                if (isVerified) return;
                 lightenAccessBtn();
                 startAutoPress();
             });
-            
+
             pressBtn.addEventListener('pointerdown', (e) => {
                 onPointerDown(e);
             });
             pressBtn.addEventListener('dragstart', (e) => e.preventDefault());
+
+            showTopBar();
+
+            floatingModal.style.opacity = '0';
+            floatingModal.style.visibility = 'hidden';
+            floatingModal.classList.add('closed');
+
         })();
     </script>
 </body>
